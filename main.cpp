@@ -1,6 +1,7 @@
 #include "common.h"
 #include "path_join.h"
 #include "path_search.h"
+#include "filter.h"
 
 // setting variables
 char vf_order = '1', version = '0';
@@ -36,6 +37,10 @@ vector<int>* vlab;				// vertex labels
 vector<unsigned>* vcnt;			// v-label counts
 vector<iter_graph>* git;
 Freq_comp fcomp(&path_freq);
+
+
+
+vector<Custom> ged_pair;
 
 
 void usage() {
@@ -354,7 +359,13 @@ int main(int argc, char** argv)
 			}
 			break;
 	}
-
+	ofstream outfile("result.txt");
+	for(int i = 0; i < ged_pair.size(); i++)
+	{
+		auto pri = content_filtering(ged_pair[i].p, ged_pair[i].q);
+		compute_rud_dist(pri, ged_pair[i].an, ged_pair[i].fil);
+	}
+	cout<<"count is "<<ged_pair.size()<<endl;
 	clean();
 	return 0;
 }

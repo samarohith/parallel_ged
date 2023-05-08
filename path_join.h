@@ -19,6 +19,15 @@ void run_min_prefix(void);
 void run_cnt_prefix(void);
 unsigned componentize(const unsigned g, unsigned* nomat, unsigned cnt, vector<vector<unsigned> >* component, unsigned**& npid, unsigned*& nsize);
 
+class Custom{
+	public : 
+	const unsigned p;
+	const unsigned q;
+	int an;
+	bool fil;
+	Custom(const unsigned x, const unsigned y, int z, bool b) : p(x), q(y), an(z), fil(b) {}
+};
+
 #define ECHO_JOIN \
 	cout << "= = = = = = = = = = = = = = = = = = = = = = = = = =" << endl \
 	<< "Candidates before non-trivial filters: " << cand << " <" << setiosflags(ios::fixed) << setprecision(2) \
@@ -59,3 +68,4 @@ extern Freq_comp fcomp;
 extern bool count_filter, min_edit_filter, local_lab_filter, deg_match_cond, filter_only;
 extern char vf_order, version;
 extern unsigned max_vnum;
+extern vector<Custom> ged_pair;
