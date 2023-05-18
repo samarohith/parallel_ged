@@ -2,6 +2,7 @@
 #include "path_join.h"
 #include "path_search.h"
 #include "filter.h"
+#include "ctpl_stl.h"
 
 // setting variables
 char vf_order = '1', version = '0';
@@ -37,6 +38,7 @@ vector<int>* vlab;				// vertex labels
 vector<unsigned>* vcnt;			// v-label counts
 vector<iter_graph>* git;
 Freq_comp fcomp(&path_freq);
+int thread_work = 0;
 
 
 
@@ -67,6 +69,10 @@ void usage() {
 		<< "-m0 -o1 -t3 [gdb] 4 2\n\n"
 		<< "Report bugs to <xiangzhao@nudt.edu.cn>." << endl;
 	exit(0);
+}
+unsigned long long int clocksTosec(chrono::high_resolution_clock::time_point start, chrono::high_resolution_clock::time_point end)
+{
+	return (unsigned long long int)(1e-6*chrono::duration_cast<chrono::nanoseconds>(end - start).count());
 }
 
 void parse_data(char* file) {
@@ -195,6 +201,17 @@ void clean() {
 	delete[] vcnt;
 	delete[] git;
 }
+
+void find_ged(int id, const int start)
+{
+	for(int i = start; i < ged_pair.size(); i++)
+	{
+		Priority *pri = content_filtering(ged_pair[i].p, ged_pair[i].q);
+		compute_rud_dist(pri, ged_pair[i].an, ged_pair[i].fil);
+		delete pri;
+	}
+}
+
 
 int main(int argc, char** argv)
 {
@@ -333,6 +350,7 @@ int main(int argc, char** argv)
 		}
 	}
 
+	chrono::high_resolution_clock::time_point cl0 = chrono::high_resolution_clock::now();
 	switch(version) {
 		case '0':
 			init_mem();
@@ -360,12 +378,29 @@ int main(int argc, char** argv)
 			break;
 	}
 	ofstream outfile("result.txt");
-	for(int i = 0; i < ged_pair.size(); i++)
+	
+	chrono::high_resolution_clock::time_point cl1 = chrono::high_resolution_clock::now();
+	int totalTimeTaken = (clocksTosec(cl0,cl1));
+	cout<<"Time for candidate generation: "<<totalTimeTaken<<endl;
+
+	/*
+	int num_threads = 1;
+	ctpl::thread_pool tp(num_threads);
+	int sz = ged_pair.size();
+	cout<<"size is "<<sz<<endl;
+	thread_work = sz/num_threads;
+	//thread_work++;
+
+	for(int i = 0; i < sz; i = i + thread_work)
 	{
-		auto pri = content_filtering(ged_pair[i].p, ged_pair[i].q);
-		compute_rud_dist(pri, ged_pair[i].an, ged_pair[i].fil);
-	}
-	cout<<"count is "<<ged_pair.size()<<endl;
+    	find_ged(0, i);
+   	}
+   	*/
+	find_ged(0,0);
+   	chrono::high_resolution_clock::time_point cl2 = chrono::high_resolution_clock::now();
+   	totalTimeTaken = (clocksTosec(cl1,cl2));
+   	cout<<"Time for candidate evaluation: "<<totalTimeTaken<<endl;
 	clean();
+	
 	return 0;
 }
