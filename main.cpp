@@ -383,7 +383,7 @@ int main(int argc, char** argv)
 	int totalTimeTaken = (clocksTosec(cl0,cl1));
 	cout<<"Time for candidate generation: "<<totalTimeTaken<<endl;
 
-	/*
+	
 	int num_threads = 1;
 	ctpl::thread_pool tp(num_threads);
 	int sz = ged_pair.size();
@@ -395,8 +395,7 @@ int main(int argc, char** argv)
 	{
     	find_ged(0, i);
    	}
-   	*/
-	find_ged(0,0);
+   	
    	chrono::high_resolution_clock::time_point cl2 = chrono::high_resolution_clock::now();
    	totalTimeTaken = (clocksTosec(cl1,cl2));
    	cout<<"Time for candidate evaluation: "<<totalTimeTaken<<endl;
