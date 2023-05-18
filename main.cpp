@@ -393,7 +393,7 @@ int main(int argc, char** argv)
 
 	for(int i = 0; i < sz; i = i + thread_work)
 	{
-    	find_ged(0, i);
+    	tp.push(find_ged, i);
    	}
    	
    	chrono::high_resolution_clock::time_point cl2 = chrono::high_resolution_clock::now();
