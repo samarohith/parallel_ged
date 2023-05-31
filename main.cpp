@@ -3,6 +3,7 @@
 #include "path_search.h"
 #include "filter.h"
 #include "ctpl_stl.h"
+#include<sys/resource.h>
 
 // setting variables
 char vf_order = '1', version = '0';
@@ -73,6 +74,12 @@ void usage() {
 unsigned long long int clocksTosec(chrono::high_resolution_clock::time_point start, chrono::high_resolution_clock::time_point end)
 {
 	return (unsigned long long int)(1e-6*chrono::duration_cast<chrono::nanoseconds>(end - start).count());
+}
+double memoryUsage()
+{
+        struct rusage r_usage;
+        getrusage(RUSAGE_SELF, &r_usage);
+        return r_usage.ru_maxrss/1024.0;
 }
 
 void parse_data(char* file) {
@@ -204,12 +211,12 @@ void clean() {
 
 void find_ged(int id, const int start)
 {
-	for(int i = start; i < ged_pair.size(); i++)
-	{
-		Priority *pri = content_filtering(ged_pair[i].p, ged_pair[i].q);
-		compute_rud_dist(pri, ged_pair[i].an, ged_pair[i].fil);
-		delete pri;
-	}
+	for(int i = start; i < start + thread_work && i < ged_pair.size(); i++)
+        {
+                Priority *pri = new Priority(ged_pair[i].q, ged_pair[i].p);
+                compute_rud_dist(pri, ged_pair[i].an, ged_pair[i].fil);
+                delete pri;
+        }
 }
 
 
@@ -399,6 +406,7 @@ int main(int argc, char** argv)
    	chrono::high_resolution_clock::time_point cl2 = chrono::high_resolution_clock::now();
    	totalTimeTaken = (clocksTosec(cl1,cl2));
    	cout<<"Time for candidate evaluation: "<<totalTimeTaken<<endl;
+	cout<<"Memory consumed : "<<memoryUsage()<<"MB"<<endl;
 	clean();
 	
 	return 0;
