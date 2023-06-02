@@ -44,6 +44,7 @@ int thread_work = 0;
 
 
 vector<Custom> ged_pair;
+vector<Custom> reservoir;
 
 
 void usage() {
@@ -77,11 +78,10 @@ unsigned long long int clocksTosec(chrono::high_resolution_clock::time_point sta
 }
 double memoryUsage()
 {
-        struct rusage r_usage;
-        getrusage(RUSAGE_SELF, &r_usage);
-        return r_usage.ru_maxrss/1024.0;
+	struct rusage r_usage;
+	getrusage(RUSAGE_SELF, &r_usage);
+	return r_usage.ru_maxrss/1024.0;
 }
-
 void parse_data(char* file) {
 	ifstream fin(file, ifstream::in);
 	if (!fin) {
@@ -211,12 +211,31 @@ void clean() {
 
 void find_ged(int id, const int start)
 {
-	for(int i = start; i < start + thread_work && i < ged_pair.size(); i++)
-        {
-                Priority *pri = new Priority(ged_pair[i].q, ged_pair[i].p);
-                compute_rud_dist(pri, ged_pair[i].an, ged_pair[i].fil);
-                delete pri;
-        }
+	for(int i = start; i < start + thread_work && i < reservoir.size(); i++)
+	{
+		Priority *pri = new Priority(reservoir[i].q, reservoir[i].p);
+		compute_rud_dist(pri, reservoir[i].an, reservoir[i].fil);
+		delete pri;
+	}
+}
+
+void selectKItems(int n, int k)
+{
+    int i;
+    //reservoir.resize(k);
+   	vector<int> stream;
+    for (i = 0; i < k; i++) stream.push_back(i);
+
+    srand(1685676679);
+    //cout<<"\ntime is "<<time(NULL)<<endl;
+ 
+    for (; i < n; i++)
+    {
+        int j = rand() % (i + 1);
+        if (j < k) stream[j] = i;
+    }
+    for(int i = 0; i < k; i++)
+    	reservoir.push_back(ged_pair[stream[i]]);
 }
 
 
@@ -391,23 +410,26 @@ int main(int argc, char** argv)
 	cout<<"Time for candidate generation: "<<totalTimeTaken<<endl;
 
 	
-	int num_threads = 1;
+	int num_threads = 2;
 	ctpl::thread_pool tp(num_threads);
 	int sz = ged_pair.size();
 	cout<<"size is "<<sz<<endl;
+	selectKItems(sz, sz/1000);
+	sz = sz/1000;
 	thread_work = sz/num_threads;
-	//thread_work++;
-
+	thread_work++;
+	cout<<"sampling done"<<endl;
 	for(int i = 0; i < sz; i = i + thread_work)
 	{
-    	tp.push(find_ged, i);
+	    	tp.push(find_ged, i);
    	}
-   	
+   	//find_ged(0,0);
    	chrono::high_resolution_clock::time_point cl2 = chrono::high_resolution_clock::now();
    	totalTimeTaken = (clocksTosec(cl1,cl2));
-   	cout<<"Time for candidate evaluation: "<<totalTimeTaken<<endl;
+   	//cout<<"Time for candidate evaluation: "<<totalTimeTaken<<endl;
 	cout<<"Memory consumed : "<<memoryUsage()<<"MB"<<endl;
 	clean();
 	
 	return 0;
 }
+
